@@ -8,21 +8,16 @@ type
 		year : integer;
 	end;
 	
-{ Returns true, if date1 is lesser than date2 }
-{function DateLess(date1, date2 : TDate) : boolean;
+{ Returns true, if date1 is lesser or eq than date2 }
+function DateLessEq(date1, date2 : TDate) : boolean;
 begin
-	DateLess := date1.year < date2.year;
+	DateLessEq := date1.year < date2.year;
 	if date1.year = date2.year then 
 	begin
-		DateLess := date1.month < date2.month;
+		DateLessEq := date1.month < date2.month;
 		if date1.month = date2.month then
-			DateLess := date1.day < date2.day;
+			DateLessEq := date1.day <= date2.day;
 	end;
-end;}
-
-function DateValue(date : TDate) : longint;
-begin
-	DateValue := date.day + date.month * 100 + date.year * 10000;
 end;
 
 { Parse date from string, returns true if success }
@@ -152,13 +147,6 @@ begin
 	swapCount := swapCount + 1;
 end;
 
-{ Compare two elements in array }
-{function Compare(date1, date2 : TDate) : boolean;
-begin
-	Compare := DateLess(date1, date2);
-	comparingCount := comparingCount + 1;
-end;  }
-
 { Sort of the array }
 procedure Sort;
 
@@ -173,11 +161,11 @@ procedure Sort;
 			repeat 
 				j := j - 1;
 				comparingCount := comparingCount + 1;
-			until DateValue(dates[j]) <= DateValue(middle);
+			until DateLessEq(dates[j], middle);
 			repeat 
 				i := i + 1;
 				comparingCount := comparingCount + 1;
-			until DateValue(dates[i]) >= DateValue(middle);
+			until DateLessEq(middle, dates[i]);
 			if i < j
 				then Swap(i, j)
 				else begin
