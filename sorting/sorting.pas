@@ -9,7 +9,7 @@ type
 	end;
 	
 { Returns true, if date1 is lesser than date2 }
-function DateLess(date1, date2 : TDate) : boolean;
+{function DateLess(date1, date2 : TDate) : boolean;
 begin
 	DateLess := date1.year < date2.year;
 	if date1.year = date2.year then 
@@ -18,6 +18,11 @@ begin
 		if date1.month = date2.month then
 			DateLess := date1.day < date2.day;
 	end;
+end;}
+
+function DateValue(date : TDate) : longint;
+begin
+	DateValue := date.day + date.month * 100 + date.year * 10000;
 end;
 
 { Parse date from string, returns true if success }
@@ -45,7 +50,7 @@ begin
 			date.month := date.month * 10 + ord(str[i]) - ord('0');
 			i := i + 1;
 		end;
-		if (i > Length(str)) or (str[i] <> ' ')
+		if (i > Length(str)) or (str[i] <> '.')
 			then exit;
 	end
 	else if str[i] = '/' then begin
@@ -108,10 +113,16 @@ function DateToString(date : TDate) : string;
 	var res, temp : string;
 begin
 	Str(date.day, temp);
+	while Length(temp) < 2 do
+		temp := '0' + temp;
 	res := temp + '.';
 	Str(date.month, temp);
+	while Length(temp) < 2 do
+		temp := '0' + temp;
 	res := res + temp + '.';
 	Str(date.year, temp);
+	while Length(temp) < 4 do
+		temp := '0' + temp;
 	res := res + temp;
 	DateToString := res;
 end;
@@ -142,11 +153,11 @@ begin
 end;
 
 { Compare two elements in array }
-function Compare(date1, date2 : TDate) : boolean;
+{function Compare(date1, date2 : TDate) : boolean;
 begin
 	Compare := DateLess(date1, date2);
 	comparingCount := comparingCount + 1;
-end; 
+end;  }
 
 { Sort of the array }
 procedure Sort;
@@ -156,13 +167,17 @@ procedure Sort;
 			middle : TDate;
 	begin
 		middle := dates[l];
-		i := l;
-		j := r;
+		i := l - 1;
+		j := r + 1;
 		while true do begin
-			repeat j := j - 1;
-			until (j < l) or Compare(dates[j], middle);
-			repeat i := i + 1;
-			until (i > r) or not Compare(middle, dates[i]);
+			repeat 
+				j := j - 1;
+				comparingCount := comparingCount + 1;
+			until DateValue(dates[j]) <= DateValue(middle);
+			repeat 
+				i := i + 1;
+				comparingCount := comparingCount + 1;
+			until DateValue(dates[i]) >= DateValue(middle);
 			if i < j
 				then Swap(i, j)
 				else begin
@@ -213,7 +228,6 @@ begin
 			then datesCount := datesCount + 1
 			else Writeln('Syntax error in line ', lineNo);
 	end;
-	Writeln('Data readed');
 	{ Sorting and printing statistics }
 	Sort;
 	Writeln('Dates: ', datesCount);
