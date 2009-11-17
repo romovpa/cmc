@@ -1,10 +1,11 @@
 { 
-  **************************************************************
-  *                  Practice work                             *
-  *  Problem: AVL trees                                        *
-  *  Author: Peter Romov <romovpa@gmail.com> (102 group)       *
-  *  This file published under GNU/GPL (Version 2, June 1991)  *
-  **************************************************************
+  ****************************************************************
+  *                  Practice work                               *
+  *  Problem: AVL trees                                          *
+  *  Author: Peter Romov <romovpa@gmail.com> (102 group)         *
+  *  This file published under GNU/GPL (Version 2, June 1991)    *
+  *  Repository: git://github.com/romovpa/cmc.git/practice/tree  *
+  ****************************************************************
 }
 
 program AVLTreeDemo(input, output);
@@ -33,6 +34,7 @@ end;
 
 type
 	PTreeNode = ^TTreeNode;
+	PPTreeNode = ^PTreeNode;
 	TTreeNode = record
 		data : TStudent;
 		height : integer;
@@ -44,10 +46,16 @@ begin
 	root := nil;
 end;
 
-procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
+function TreeGetPointer(var root : PTreeNode; p : PTreeNode) : PPTreeNode;
+begin
+	if p^.parent = nil 
+		then TreeGetPointer := @root
+		else if p^.parent^.left = p
+			then TreeGetPointer := @p^.parent^.left
+			else TreeGetPointer := @p^.parent^.right;
+end;
 
-	type 
-		PPTreeNode = ^PTreeNode;
+procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
 	
 	function Height(p : PTreeNode) : integer;
 	begin
@@ -63,15 +71,6 @@ procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
 			then p^.height := Height(p^.left);
 		if Height(p^.right) > p^.height
 			then p^.height := Height(p^.right);
-	end;
-	
-	function GetPointer(p : PTreeNode) : PPTreeNode;
-	begin
-		if p^.parent = nil 
-			then GetPointer := @root
-			else if p^.parent^.left = p
-				then GetPointer := @p^.parent^.left
-				else GetPointer := @p^.parent^.right;
 	end;
 
 	procedure LeftLeftRotate(p : PPTreeNode);
@@ -164,14 +163,14 @@ begin
 		if Height(p^.left) > Height(p^.right) then begin
 			{ Left disbalance }
 			if Height(p^.left^.left) > Height(p^.left^.right)
-				then LeftLeftRotate(GetPointer(p))
-				else LeftRightRotate(GetPointer(p));
+				then LeftLeftRotate(TreeGetPointer(root, p))
+				else LeftRightRotate(TreeGetPointer(root, p));
 		end
 		else begin
 			{ Right disbalance }
 			if Height(p^.right^.left) > Height(p^.right^.right)
-				then RightLeftRotate(GetPointer(p))
-				else RightRightRotate(GetPointer(p));
+				then RightLeftRotate(TreeGetPointer(root, p))
+				else RightRightRotate(TreeGetPointer(root, p));
 		end;
 	end;	
 	{ Balance parent }
@@ -210,6 +209,35 @@ begin
 			t^.parent := p;
 			TreeBalance(root, p);
 		end;
+end;
+
+function TreeSuccessor(p : PTreeNode) : PTreeNode;
+begin
+	if p = nil 
+		then TreeSuccessor := nil
+		else begin
+			if p^.right <> nil then begin
+				p := p^.right;
+				while p^.left <> nil do
+					p := p^.left;
+				TreeSuccessor := p;
+			end
+			else begin
+				while (p^.parent <> nil) and (p^.parent^.right = p) do
+					p := p^.parent;
+				TreeSuccessor := p^.parent;
+			end;
+		end;
+end;
+
+procedure TreeRemove(var root : PTreeNode; p : PTreeNode);
+	
+begin
+	if p <> nil then begin
+		if (p^.left = nil) and (p^.right = nil) then begin
+			
+		end
+	end;	
 end;
 
 procedure TreePrint(p : PTreeNode);
@@ -427,6 +455,8 @@ end;
 
 const 
 	UserPrompt = '> ';
+	WellcomeMessage = 'AVL Tree Demonstration';
+	ShortHelpMessage = 'Enter ''help'' for more information';
 
 procedure UserConsole;
 	var root : PTreeNode;
@@ -448,36 +478,72 @@ procedure UserConsole;
 	end;
 
 	procedure CommandShow;
+		var student : TStudent;
+			p : PTreeNode;
 	begin
-		
+		Write('Students name: ');
+		Readln(student.name);
+		p := TreeSearch(root, student);
+		Writeln('Found:');
+		if p = nil 
+			then Writeln('  nothing');
+		while (p <> nil) and (p^.data.name = student.name) do begin
+			Write('  ');
+			StudentPrint(p^.data);
+			Writeln;
+			p := TreeSuccessor(p);
+		end;
 	end;
 	
 	procedure CommandInsert;
+		var student : TStudent;
 	begin
-	
+		Write('New student name: ');
+		Readln(student.name);
+		Write('New student score: ');
+		Readln(student.score);
+		TreeInsert(root, student);
 	end;
 	
 	procedure CommandRemove;
+		var student : TStudent;
+			p : PTreeNode;
 	begin
-	
+		Write('Student name: ');
+		Readln(student.name);
+		p := TreeSearch(root, student);
+		if p = nil
+			then Writeln('  no student to remove')
+			else TreeRemove(root, p);
 	end;
 	
 	procedure CommandList;
+		var head : PListNode;
 	begin
-	
+		TreeToList(root, head);
+		Writeln('  doble-linked list generated');
+		ListPrint(head);
 	end;
 
 begin
+	Writeln(WellcomeMessage);
+	Writeln(ShortHelpMessage);
 	InputData(root);
 	while true do begin
 		{ Reading command }
 		Write(UserPrompt);
 		Readln(cmd);
 		{ Handle command }
-		if (cmd = 'printf') or (cmd = '1') then
-			TreeLinePrint(root, true)
-		else if (cmd = 'printl') or (cmd = '2') then
-			TreeLinePrint(root, false)
+		if (cmd = 'printf') or (cmd = '1') then 
+			begin
+				TreeLinePrint(root, true);
+				Writeln;
+			end
+		else if (cmd = 'printb') or (cmd = '2') then
+			begin
+				TreeLinePrint(root, false);
+				Writeln;
+			end
 		else if (cmd = 'print') or (cmd = '3') then
 			TreePrint(root)
 		else if (cmd = 'show') or (cmd = '4') then 
@@ -493,8 +559,7 @@ begin
 		else if (cmd = 'help') or (cmd = '?') then 
 			CommandHelp
 		else if (cmd = 'quit') or (cmd = '0') then
-			break
-			
+			break;
 	end;
 end;
 
