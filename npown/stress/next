@@ -1,0 +1,9 @@
+#!/usr/bin/python
+
+fin = open("input", "r")
+n = int(fin.read())
+fin.close()
+
+fout = open("input", "w")
+fout.write(str(n+1))
+fout.close()

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+while [ $? == 0 ]
+do
+	./next
+	./solve < input > output
+	./checker
+done

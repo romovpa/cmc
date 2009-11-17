@@ -1,0 +1,19 @@
+#!/usr/bin/python
+
+def findMinimalN(a):
+	res = 1
+	while res**res % a != 0: res += 1 
+	return res
+
+fin = open("input", "r")
+fout = open("output", "r")
+
+a = int(fin.read())
+n = int(fout.read())
+
+if n == findMinimalN(a):	
+	print "OK: "+str(a)
+	exit(0)
+else:
+	print "Output: "+str(n)+", Minimal: "+str(findMinimalN(a))
+	exit(1) 
