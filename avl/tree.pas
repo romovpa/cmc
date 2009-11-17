@@ -320,12 +320,15 @@ type
 { Generates double-linked list from tree }
 procedure TreeToList(root : PTreeNode; var head : PListNode);
 	
-	{ Add nodes from root subtree after last list node, returns new last list node }
-	function AddToList(root : PTreeNode; last : PListNode) : PListNode;
+	var last : PListNode;
+	
+	{ Add nodes from root subtree after last list node }
+	procedure AddToList(root : PTreeNode);
 	begin
 		if root <> nil then begin
 			{ Adding left subtree }
-			last := AddToList(root^.left, last);
+			if root^.left <> nil 
+				then AddToList(root^.left);
 			{ Adding middle node }
 			if last = nil then begin
 				new(last);
@@ -342,13 +345,14 @@ procedure TreeToList(root : PTreeNode; var head : PListNode);
 				last := last^.next;
 			end;
 			{ Adding right subtree }
-			last := AddToList(root^.right, last);
-		end
-		else AddToList := last;
+			if root^.right <> nil
+				then AddToList(root^.right);
+		end;
 	end;
 	
 begin
-	AddToList(root, nil);
+	last := nil;
+	AddToList(root);
 end;
 
 procedure ListPrint(p : PListNode);
@@ -446,7 +450,10 @@ begin
 				head := head^.next;
 				dispose(head^.prev);
 			end
-			else dispose(head); // May Be BUG!!!!!
+			else begin 
+				dispose(head); 
+				break;
+			end;
 	end;
 	Close(outputFile);
 end;
@@ -523,6 +530,7 @@ procedure UserConsole;
 		TreeToList(root, head);
 		Writeln('  doble-linked list generated');
 		ListPrint(head);
+		Writeln;
 	end;
 
 begin
@@ -559,7 +567,9 @@ begin
 		else if (cmd = 'help') or (cmd = '?') then 
 			CommandHelp
 		else if (cmd = 'quit') or (cmd = '0') then
-			break;
+			break
+		else if cmd <> '' 
+			then Writeln('Unknown command ''', cmd, '''');
 	end;
 end;
 
