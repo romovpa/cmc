@@ -1,6 +1,15 @@
-program AVLTree(input, output);
+{ 
+  **************************************************************
+  *                  Practice work                             *
+  *  Problem: AVL trees                                        *
+  *  Author: Peter Romov <romovpa@gmail.com> (102 group)       *
+  *  This file published under GNU/GPL (Version 2, June 1991)  *
+  **************************************************************
+}
 
-{ STUDENT STRUCTURE }
+program AVLTreeDemo(input, output);
+
+{ ========== STUDENT STRUCTURE ========== }
 
 type
 	TStudent = record
@@ -20,7 +29,7 @@ begin
 	Write(data.name, ' (', data.score:0:2, ')');
 end;
 
-{ TREE STRUCTURE }
+{ ========== TREE STRUCTURE ========== }
 
 type
 	PTreeNode = ^TTreeNode;
@@ -223,10 +232,113 @@ begin
 	Print(p, 0);
 end;
 
-{ PROGRAM }
+procedure TreeLinePrint(p : PTreeNode; direction : boolean);
+
+	procedure Print(p : PTreeNode);
+	begin
+		if p <> nil then begin
+			if direction then begin
+				Print(p^.left);
+				if p^.left <> nil
+					then Write(', ');
+			end
+			else begin
+				Print(p^.right);
+				if p^.right <> nil
+					then Write(', ');
+			end;
+			StudentPrint(p^.data);
+			if direction then begin
+				if p^.right <> nil
+					then Write(', ');
+				Print(p^.right);
+			end
+			else begin
+				if p^.left <> nil
+					then Write(', ');
+				Print(p^.left);
+			end;
+		end;
+	end;
+
+begin
+	Write('{');
+	Print(p);
+	Write('}');
+end;
+
+function TreeSearch(var root : PTreeNode; key : TStudent) : PTreeNode;
+	var p, t : PTreeNode;
+begin
+	t := nil;
+	p := root;
+	while p <> nil do begin
+		if StudentLess(key, p^.data)
+			then p := p^.left
+			else p := p^.right;
+	end;
+	TreeSearch := t;
+end;
+
+{ ========== DOUBLE-LINKED LIST STRUCTURE ========== }
+
+type
+	PListNode = ^TListNode;
+	TListNode = record
+		data : TStudent;
+		next, prev : PListNode;
+	end;
+
+{ Generates double-linked list from tree }
+procedure TreeToList(root : PTreeNode; var head : PListNode);
+	
+	{ Add nodes from root subtree after last list node, returns new last list node }
+	function AddToList(root : PTreeNode; last : PListNode) : PListNode;
+	begin
+		if root <> nil then begin
+			{ Adding left subtree }
+			last := AddToList(root^.left, last);
+			{ Adding middle node }
+			if last = nil then begin
+				new(last);
+				head := last;
+				last^.prev := nil;
+				last^.next := nil;
+				last^.data := root^.data;
+			end
+			else begin
+				new(last^.next);
+				last^.next^.data := root^.data;
+				last^.next^.prev := last;
+				last^.next^.next := nil;
+				last := last^.next;
+			end;
+			{ Adding right subtree }
+			last := AddToList(root^.right, last);
+		end
+		else AddToList := last;
+	end;
+	
+begin
+	AddToList(root, nil);
+end;
+
+procedure ListPrint(p : PListNode);
+begin
+	Write('{');
+	while p <> nil do begin
+		StudentPrint(p^.data);
+		if p^.next <> nil
+			then Write(', ');
+		p := p^.next;
+	end;
+	Write('}');
+end;
+
+{ ========== INPUT/OUTPUT FUNCTIONS ========== }
 
 const 
-	InputFileName = 'input.txt';
+	StudentsFileName = 'students.txt';
 	SetOfNameFirstChars : set of char = ['A'..'Z'];
 	SetOfNameChars : set of char = ['a'..'z'];
 	SetOfFirstDigits : set of char = ['1'..'5'];
@@ -278,7 +390,7 @@ procedure InputData(var root : PTreeNode);
 		lineNo : integer;
 begin
 	TreeInit(root);
-	Assign(inputFile, InputFileName);
+	Assign(inputFile, StudentsFileName);
 	Reset(inputFile);
 	lineNo := 0;
 	while not Eof(inputFile) do begin
@@ -291,9 +403,103 @@ begin
 	Close(inputFile);
 end;
 
-var root : PTreeNode;
+procedure OutputData(root : PTreeNode);
+	var head : PListNode;
+		outputFile : Text;
+begin
+	Assign(outputFile, StudentsFileName);
+	Rewrite(outputFile);
+	TreeToList(root, head);
+	while head <> nil do begin
+		Writeln(outputFile, head^.data.name, CharOfSeparator, 
+			head^.data.score:0:5);
+		if head^.next <> nil
+			then begin
+				head := head^.next;
+				dispose(head^.prev);
+			end
+			else dispose(head); // May Be BUG!!!!!
+	end;
+	Close(outputFile);
+end;
+
+{ ========== USER INTERFACE ========== }
+
+const 
+	UserPrompt = '> ';
+
+procedure UserConsole;
+	var root : PTreeNode;
+		cmd : string;
+
+	procedure CommandHelp;
+	begin
+		Writeln('Available commands: ');
+		Writeln('  1  printf  -  print tree forwards');
+		Writeln('  2  printb  -  print tree backwards');
+		Writeln('  3  print   -  print tree graph');
+		Writeln('  4  show    -  show students by name');
+		Writeln('  5  insert  -  insert student to tree');
+		Writeln('  6  remove  -  remove student from tree');
+		Writeln('  7  list    -  generate double-linked list and print it');
+		Writeln('  8  save    -  output current tree state to students file');
+		Writeln('  ?  help    -  print this help');
+		Writeln('  0  quit    -  quit application');
+	end;
+
+	procedure CommandShow;
+	begin
+		
+	end;
+	
+	procedure CommandInsert;
+	begin
+	
+	end;
+	
+	procedure CommandRemove;
+	begin
+	
+	end;
+	
+	procedure CommandList;
+	begin
+	
+	end;
 
 begin
 	InputData(root);
-	TreePrint(root);
+	while true do begin
+		{ Reading command }
+		Write(UserPrompt);
+		Readln(cmd);
+		{ Handle command }
+		if (cmd = 'printf') or (cmd = '1') then
+			TreeLinePrint(root, true)
+		else if (cmd = 'printl') or (cmd = '2') then
+			TreeLinePrint(root, false)
+		else if (cmd = 'print') or (cmd = '3') then
+			TreePrint(root)
+		else if (cmd = 'show') or (cmd = '4') then 
+			CommandShow
+		else if (cmd = 'insert') or (cmd = '5') then 
+			CommandInsert
+		else if (cmd = 'remove') or (cmd = '6') then 
+			CommandRemove
+		else if (cmd = 'list') or (cmd = '7') then 
+			CommandList
+		else if (cmd = 'save') or (cmd = '8') then
+			OutputData(root)
+		else if (cmd = 'help') or (cmd = '?') then 
+			CommandHelp
+		else if (cmd = 'quit') or (cmd = '0') then
+			break
+			
+	end;
+end;
+
+{ ========== IMPLEMENTATION ========== }
+
+begin
+	UserConsole;
 end.
