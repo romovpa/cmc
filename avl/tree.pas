@@ -17,7 +17,8 @@ type
 		name : string;
 		score : real;
 	end;
-	
+
+// Returns true, if first student lesser than second	
 function StudentLess(a, b : TStudent) : boolean;
 begin
 	if a.name = b.name
@@ -25,6 +26,7 @@ begin
 		else StudentLess := a.name < b.name;
 end;
 
+// Wites student name and score to output
 procedure StudentPrint(data : TStudent);
 begin
 	Write(data.name, ' (', data.score:0:2, ')');
@@ -41,11 +43,13 @@ type
 		left, right, parent : PTreeNode;
 	end;
 
+// Initialization of the tree
 procedure TreeInit(var root : PTreeNode);
 begin
 	root := nil;
 end;
 
+// Returns pointer to pointer, thats refer to p in tree
 function TreeGetPointer(var root : PTreeNode; p : PTreeNode) : PPTreeNode;
 begin
 	if p^.parent = nil 
@@ -55,6 +59,7 @@ begin
 			else TreeGetPointer := @p^.parent^.right;
 end;
 
+// Returns height of subtree
 function TreeHeight(p : PTreeNode) : integer;
 begin
 	if p = nil 
@@ -62,6 +67,7 @@ begin
 		else TreeHeight := p^.height + 1;
 end;
 
+// Updates height of node, if heights of childrens are correct
 procedure TreeUpdateHeight(p : PTreeNode);
 begin
 	p^.height := 0;
@@ -71,6 +77,7 @@ begin
 		then p^.height := TreeHeight(p^.right);
 end;
 
+// Makes subtree balanced, if childrens are balanced and does it with parent
 procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
 
 	procedure LeftLeftRotate(p : PPTreeNode);
@@ -180,6 +187,7 @@ begin
 	end;
 end;
 
+// Inserts new node in the tree
 procedure TreeInsert(var root : PTreeNode; data : TStudent);
 	var t, p, q : PTreeNode;
 begin
@@ -213,6 +221,7 @@ begin
 		end;
 end;
 
+// Returns minimal node that is more than given in the tree
 function TreeSuccessor(p : PTreeNode) : PTreeNode;
 begin
 	if p = nil 
@@ -232,6 +241,7 @@ begin
 		end;
 end;
 
+// Returns maximal node that is less than given in the tree
 function TreePredictor(p : PTreeNode) : PTreeNode;
 begin
 	if p = nil 
@@ -251,6 +261,7 @@ begin
 		end;
 end;
 
+// Removes node from tree
 procedure TreeRemove(var root : PTreeNode; p : PTreeNode);
 	var t : PTreeNode;
 begin
@@ -279,6 +290,7 @@ begin
 		end;
 end;
 
+// Writes tree graph to output
 procedure TreePrint(p : PTreeNode);
 
 	procedure Print(p : PTreeNode; tab : integer);
@@ -299,6 +311,7 @@ begin
 	Print(p, 0);
 end;
 
+// Writes tree sequence to output, in reverse direction if direction = false
 procedure TreeLinePrint(p : PTreeNode; direction : boolean);
 
 	procedure Print(p : PTreeNode);
@@ -334,6 +347,7 @@ begin
 	Write('}');
 end;
 
+// Returns pointer to node, which contains given key, nil if that node is not exists
 function TreeSearch(var root : PTreeNode; key : TStudent) : PTreeNode;
 	var p : PTreeNode;
 begin
@@ -360,7 +374,7 @@ type
 		next, prev : PListNode;
 	end;
 
-{ Generates double-linked list from tree }
+// Generates double-linked list from tree
 procedure TreeToList(root : PTreeNode; var head : PListNode);
 	
 	var last : PListNode;
@@ -398,6 +412,7 @@ begin
 	AddToList(root);
 end;
 
+// Writes linked list to output
 procedure ListPrint(p : PListNode);
 begin
 	Write('{');
@@ -420,6 +435,7 @@ const
 	SetOfDigits : set of char = ['0'..'9'];
 	CharOfSeparator : char = ' ';
 
+// Parses str to student consider of grammar in statement, returns true if its success
 function ParseLine(var student : TStudent; str : string) : boolean;
 	var i : integer;
 		muler : real;
@@ -458,6 +474,7 @@ begin
 	ParseLine := (i > Length(str)) and (muler < 0.1);
 end;
 
+// Reads students data from StudentsFile to the tree
 procedure InputData(var root : PTreeNode);
 	var inputFile : Text;
 		student : TStudent;
@@ -478,6 +495,7 @@ begin
 	Close(inputFile);
 end;
 
+// Writes students data from the tree to StudentsFile
 procedure OutputData(root : PTreeNode);
 	var head : PListNode;
 		outputFile : Text;
@@ -508,10 +526,12 @@ const
 	WellcomeMessage = 'AVL Tree Demonstration';
 	ShortHelpMessage = 'Enter ''help'' for more information';
 
+// Runs simple user console for operating with structures
 procedure UserConsole;
 	var root : PTreeNode;
 		cmd : string;
 
+	{ Handler for 'help' command }
 	procedure CommandHelp;
 	begin
 		Writeln('Available commands: ');
@@ -527,6 +547,7 @@ procedure UserConsole;
 		Writeln('  0  quit    -  quit application');
 	end;
 
+	{ Handler for 'lookup' command }
 	procedure CommandLookup;
 		var student : TStudent;
 			p, t : PTreeNode;
@@ -550,6 +571,7 @@ procedure UserConsole;
 		end;
 	end;
 	
+	{ Handler for 'insert' command }
 	procedure CommandInsert;
 		var student : TStudent;
 	begin
@@ -560,6 +582,7 @@ procedure UserConsole;
 		TreeInsert(root, student);
 	end;
 	
+	{ Handler for 'remove' command }
 	procedure CommandRemove;
 		var student : TStudent;
 			p : PTreeNode;
@@ -572,6 +595,7 @@ procedure UserConsole;
 			else TreeRemove(root, p);
 	end;
 	
+	{ Handler for 'list' command }
 	procedure CommandList;
 		var head : PListNode;
 	begin
@@ -584,6 +608,7 @@ procedure UserConsole;
 begin
 	Writeln(WellcomeMessage);
 	Writeln(ShortHelpMessage);
+	{ Init data }
 	InputData(root);
 	while true do begin
 		{ Reading command }
@@ -624,5 +649,6 @@ end;
 { ========== IMPLEMENTATION ========== }
 
 begin
-	UserConsole;
+	{ No comments... }
+	UserConsole; 
 end.
