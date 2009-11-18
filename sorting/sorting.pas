@@ -27,14 +27,14 @@ function ParseDate(var date : TDate; str : string) : boolean;
 begin
 	ParseDate := false;
 	i := 1;
-	// Parsing day
+	{ Parsing day }
 	date.day := 0;
 	while (i <= Length(str)) and (str[i] in ['0'..'9']) do
 	begin
 		date.day := date.day * 10 + ord(str[i]) - ord('0');
 		i := i + 1;
 	end;
-	// Parsing month
+	{ Parsing month }
 	date.month := 0;
 	if i > Length(str) 
 		then exit;
@@ -86,7 +86,7 @@ begin
 			then exit;
 	end
 	else exit;
-	// Parsing year
+	{ Parsing year }
 	i := i + 1;
 	if i > Length(str) 
 		then exit;
@@ -100,7 +100,7 @@ begin
 		then date.year := date.year + 2000;
 	if i <= Length(str) 
 		then exit;
-	// Done
+	{ Done }
 	ParseDate := true;
 end;
 
