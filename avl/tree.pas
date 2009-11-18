@@ -230,6 +230,25 @@ begin
 		end;
 end;
 
+function TreePredictor(p : PTreeNode) : PTreeNode;
+begin
+	if p = nil 
+		then TreePredictor := nil
+		else begin
+			if p^.left <> nil then begin
+				p := p^.left;
+				while p^.right <> nil do 
+					p := p^.right;
+				TreePredictor := p;
+			end
+			else begin
+				while (p^.parent <> nil) and (p^.parent^.left = p) do
+					p := p^.parent;
+				TreePredictor := p^.parent;
+			end;
+		end;
+end;
+
 procedure TreeRemove(var root : PTreeNode; p : PTreeNode);
 	
 begin
@@ -296,16 +315,20 @@ begin
 end;
 
 function TreeSearch(var root : PTreeNode; key : TStudent) : PTreeNode;
-	var p, t : PTreeNode;
+	var p : PTreeNode;
 begin
-	t := nil;
 	p := root;
 	while p <> nil do begin
-		if StudentLess(key, p^.data)
+		if key.name = p^.data.name then begin
+			if (p^.left <> nil) and (p^.left^.data.name = key.name)
+				then p := p^.left
+				else break;
+		end	
+		else if StudentLess(key, p^.data)
 			then p := p^.left
 			else p := p^.right;
 	end;
-	TreeSearch := t;
+	TreeSearch := p;
 end;
 
 { ========== DOUBLE-LINKED LIST STRUCTURE ========== }
@@ -484,9 +507,9 @@ procedure UserConsole;
 		Writeln('  0  quit    -  quit application');
 	end;
 
-	procedure CommandShow;
+	procedure CommandLookup;
 		var student : TStudent;
-			p : PTreeNode;
+			p, t : PTreeNode;
 	begin
 		Write('Students name: ');
 		Readln(student.name);
@@ -494,6 +517,11 @@ procedure UserConsole;
 		Writeln('Found:');
 		if p = nil 
 			then Writeln('  nothing');
+		t := p;
+		repeat 
+			p := t;
+			t := TreePredictor(p);
+		until (t = nil) or (t^.data.name <> student.name);
 		while (p <> nil) and (p^.data.name = student.name) do begin
 			Write('  ');
 			StudentPrint(p^.data);
@@ -554,8 +582,8 @@ begin
 			end
 		else if (cmd = 'print') or (cmd = '3') then
 			TreePrint(root)
-		else if (cmd = 'show') or (cmd = '4') then 
-			CommandShow
+		else if (cmd = 'lookup') or (cmd = '4') then 
+			CommandLookup
 		else if (cmd = 'insert') or (cmd = '5') then 
 			CommandInsert
 		else if (cmd = 'remove') or (cmd = '6') then 
