@@ -4,7 +4,7 @@
   *  Problem: AVL trees                                          *
   *  Author: Peter Romov <romovpa@gmail.com> (102 group)         *
   *  This file published under GNU/GPL (Version 2, June 1991)    *
-  *  Repository: git://github.com/romovpa/cmc.git/practice/tree  *
+  *  Repository: git://github.com/romovpa/cmc.git    /avl        *
   ****************************************************************
 }
 
