@@ -55,23 +55,23 @@ begin
 			else TreeGetPointer := @p^.parent^.right;
 end;
 
+function TreeHeight(p : PTreeNode) : integer;
+begin
+	if p = nil 
+		then TreeHeight := 0
+		else TreeHeight := p^.height + 1;
+end;
+
+procedure TreeUpdateHeight(p : PTreeNode);
+begin
+	p^.height := 0;
+	if TreeHeight(p^.left) > p^.height
+		then p^.height := TreeHeight(p^.left);
+	if TreeHeight(p^.right) > p^.height
+		then p^.height := TreeHeight(p^.right);
+end;
+
 procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
-	
-	function Height(p : PTreeNode) : integer;
-	begin
-		if p = nil 
-			then Height := 0
-			else Height := p^.height + 1;
-	end;
-	
-	procedure UpdateHeight(p : PTreeNode);
-	begin
-		p^.height := 0;
-		if Height(p^.left) > p^.height
-			then p^.height := Height(p^.left);
-		if Height(p^.right) > p^.height
-			then p^.height := Height(p^.right);
-	end;
 
 	procedure LeftLeftRotate(p : PPTreeNode);
 		var a, b, t : PTreeNode;
@@ -87,8 +87,8 @@ procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
 		if a^.left <> nil
 			then a^.left^.parent := a;
 		p^ := b;
-		UpdateHeight(a);
-		UpdateHeight(b);
+		TreeUpdateHeight(a);
+		TreeUpdateHeight(b);
 	end;
 	
 	procedure RightRightRotate(p : PPTreeNode);
@@ -105,8 +105,8 @@ procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
 		if a^.right <> nil 
 			then a^.right^.parent := a;
 		p^ := b;
-		UpdateHeight(a);
-		UpdateHeight(b);
+		TreeUpdateHeight(a);
+		TreeUpdateHeight(b);
 	end;
 	
 	procedure LeftRightRotate(p : PPTreeNode);
@@ -127,9 +127,9 @@ procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
 		c^.left := b;
 		c^.right := a;
 		p^ := c;
-		UpdateHeight(a);
-		UpdateHeight(b);
-		UpdateHeight(c);
+		TreeUpdateHeight(a);
+		TreeUpdateHeight(b);
+		TreeUpdateHeight(c);
 	end;
 	
 	procedure RightLeftRotate(p : PPTreeNode);
@@ -150,32 +150,34 @@ procedure TreeBalance(var root : PTreeNode; p : PTreeNode);
 		c^.left := a;
 		c^.right := b;
 		p^ := c;
-		UpdateHeight(a);
-		UpdateHeight(b);
-		UpdateHeight(c);
+		TreeUpdateHeight(a);
+		TreeUpdateHeight(b);
+		TreeUpdateHeight(c);
 	end;
 
 begin
-	{ Updating height }
-	UpdateHeight(p);
-	{ Handle cases }
-	if abs(Height(p^.left) - Height(p^.right)) = 2 then begin
-		if Height(p^.left) > Height(p^.right) then begin
-			{ Left disbalance }
-			if Height(p^.left^.left) > Height(p^.left^.right)
-				then LeftLeftRotate(TreeGetPointer(root, p))
-				else LeftRightRotate(TreeGetPointer(root, p));
-		end
-		else begin
-			{ Right disbalance }
-			if Height(p^.right^.left) > Height(p^.right^.right)
-				then RightLeftRotate(TreeGetPointer(root, p))
-				else RightRightRotate(TreeGetPointer(root, p));
-		end;
-	end;	
-	{ Balance parent }
-	if p^.parent <> nil
-		then TreeBalance(root, p^.parent);
+	if p <> nil then begin
+		{ Updating height }
+		TreeUpdateHeight(p);
+		{ Handle cases }
+		if abs(TreeHeight(p^.left) - TreeHeight(p^.right)) = 2 then begin
+			if TreeHeight(p^.left) > TreeHeight(p^.right) then begin
+				{ Left disbalance }
+				if TreeHeight(p^.left^.left) > TreeHeight(p^.left^.right)
+					then LeftLeftRotate(TreeGetPointer(root, p))
+					else LeftRightRotate(TreeGetPointer(root, p));
+			end
+			else begin
+				{ Right disbalance }
+				if TreeHeight(p^.right^.left) > TreeHeight(p^.right^.right)
+					then RightLeftRotate(TreeGetPointer(root, p))
+					else RightRightRotate(TreeGetPointer(root, p));
+			end;
+		end;	
+		{ Balance parent }
+		if p^.parent <> nil
+			then TreeBalance(root, p^.parent);
+	end;
 end;
 
 procedure TreeInsert(var root : PTreeNode; data : TStudent);
@@ -250,13 +252,31 @@ begin
 end;
 
 procedure TreeRemove(var root : PTreeNode; p : PTreeNode);
-	
+	var t : PTreeNode;
 begin
-	if p <> nil then begin
+	if p <> nil then 
 		if (p^.left = nil) and (p^.right = nil) then begin
-			
+			{ Remove leaf }
+			TreeGetPointer(root, p)^ := nil;
+			TreeBalance(root, p^.parent);
+			dispose(p);
+		end 
+		else if p^.left <> nil then begin
+			{ Remove left }
+			t := p^.left;
+			while t^.right <> nil do
+				t := t^.right;
+			p^.data := t^.data;
+			TreeRemove(root, t);
 		end
-	end;	
+		else begin
+			{ Remove right }
+			t := p^.right;
+			while t^.left <> nil do
+				t := t^.left;
+			p^.data := t^.data;
+			TreeRemove(root, t);
+		end;
 end;
 
 procedure TreePrint(p : PTreeNode);
@@ -498,7 +518,7 @@ procedure UserConsole;
 		Writeln('  1  printf  -  print tree forwards');
 		Writeln('  2  printb  -  print tree backwards');
 		Writeln('  3  print   -  print tree graph');
-		Writeln('  4  show    -  show students by name');
+		Writeln('  4  lookup  -  show students by name');
 		Writeln('  5  insert  -  insert student to tree');
 		Writeln('  6  remove  -  remove student from tree');
 		Writeln('  7  list    -  generate double-linked list and print it');
