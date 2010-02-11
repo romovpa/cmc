@@ -1,13 +1,3 @@
-{ 
-  ****************************************************************
-  *                  Practice work                               *
-  *  Problem: AVL trees                                          *
-  *  Author: Peter Romov <romovpa@gmail.com> (102 group)         *
-  *  This file published under GNU/GPL (Version 2, June 1991)    *
-  *  Repository: git://github.com/romovpa/cmc.git    /avl        *
-  ****************************************************************
-}
-
 program AVLTreeDemo(input, output);
 
 { ========== STUDENT STRUCTURE ========== }
@@ -297,18 +287,41 @@ procedure TreePrint(p : PTreeNode);
 		var i : integer;
 	begin
 		if p <> nil then begin
+			Print(p^.left, tab+1);
 			for i := 1 to tab do
 				Write('..');
 			Write('<', p^.height, '> ');
 			StudentPrint(p^.data);
 			Writeln;
-			Print(p^.left, tab+1);
 			Print(p^.right, tab+1);
 		end;
 	end;
 
 begin
 	Print(p, 0);
+end;
+
+procedure TreePrintLevel(root : PTreeNode; level : integer);
+	
+	procedure Print(p : PTreeNode; k : integer);
+	begin
+		if p = nil
+			then exit;
+		if k = 0
+			then begin
+				StudentPrint(p^.data);
+				Write(', ');
+			end
+			else begin
+				Print(p^.left, k-1);
+				Print(p^.right, k-1)
+			end;
+	end;
+	
+begin
+	Write('{');
+	Print(root, level);
+	Write('}');
 end;
 
 // Writes tree sequence to output, in reverse direction if direction = false
@@ -543,6 +556,7 @@ procedure UserConsole;
 		Writeln('  6  remove  -  remove student from tree');
 		Writeln('  7  list    -  generate double-linked list and print it');
 		Writeln('  8  save    -  output current tree state to students file');
+		Writeln('  9  level   -  print tree level');
 		Writeln('  ?  help    -  print this help');
 		Writeln('  0  quit    -  quit application');
 	end;
@@ -604,6 +618,15 @@ procedure UserConsole;
 		ListPrint(head);
 		Writeln;
 	end;
+	
+	procedure CommandLevel;
+		var level : integer;
+	begin
+		Write('Enter level: ');
+		Readln(level);
+		TreePrintLevel(root, level);
+		Writeln;
+	end;
 
 begin
 	Writeln(WellcomeMessage);
@@ -637,6 +660,8 @@ begin
 			CommandList
 		else if (cmd = 'save') or (cmd = '8') then
 			OutputData(root)
+		else if (cmd = 'level') or (cmd = '9') then
+			CommandLevel
 		else if (cmd = 'help') or (cmd = '?') then 
 			CommandHelp
 		else if (cmd = 'quit') or (cmd = '0') then

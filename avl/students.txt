@@ -1,15 +1,12 @@
-Sidorov 1.0
-Petrov 1.5
-Ivanov 2.0
-Maximov 2.5
-Fyodorov 3.0
-Vlasov 3.5
-Geniev 4.0
-Ivanov 4.5
-Romov 5.0
-Ivanov 5.0
-BadStudent 12.5
-badStudent 5.0
-BadStudent 2
- - wtf? -
-
+A 1.00000
+B 1.00000
+Fyodorov 3.00000
+Geniev 4.00000
+Ivanov 2.00000
+Ivanov 4.50000
+Ivanov 5.00000
+Maximov 2.50000
+Petrov 1.50000
+Romov 5.00000
+Sidorov 1.00000
+Vlasov 3.50000
