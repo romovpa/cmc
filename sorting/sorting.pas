@@ -9,15 +9,21 @@ type
 	end;
 	
 { Returns true, if date1 is lesser or eq than date2 }
-function DateLessEq(date1, date2 : TDate) : boolean;
+function DateLess(date1, date2 : TDate) : boolean;
 begin
-	DateLessEq := date1.year < date2.year;
+	DateLess := date1.year < date2.year;
 	if date1.year = date2.year then 
 	begin
-		DateLessEq := date1.month < date2.month;
+		DateLess := date1.month < date2.month;
 		if date1.month = date2.month then
-			DateLessEq := date1.day <= date2.day;
+			DateLess := date1.day <= date2.day;
 	end;
+end;
+
+function DateEq(date1, date2 : TDate) : boolean;
+begin
+	DateEq := (date1.year = date2.year) and (date1.month = date2.month) 
+		and (date1.day = date2.day);
 end;
 
 { Parse date from string, returns true if success }
@@ -155,21 +161,26 @@ procedure Sort;
 			middle : TDate;
 	begin
 		middle := dates[l];
-		i := l - 1;
-		j := r + 1;
+		i := l;
+		j := r;
 		while true do begin
-			repeat 
+			while (j >= l) and DateLess(middle, dates[j]) do begin
 				j := j - 1;
 				comparingCount := comparingCount + 1;
-			until DateLessEq(dates[j], middle);
-			repeat 
+			end;
+			while (i <= r) and DateLess(dates[i], middle) do begin
 				i := i + 1;
 				comparingCount := comparingCount + 1;
-			until DateLessEq(middle, dates[i]);
+			end;
 			if i < j
-				then Swap(i, j)
+				then begin
+					if not DateEq(dates[i], dates[j]) then
+						Swap(i, j);
+					i := i + 1;
+					j := j - 1;
+				end
 				else begin
-					Split := j;
+					Split := j-1;
 					exit;
 				end;
 		end;
