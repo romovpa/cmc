@@ -5,9 +5,14 @@
  *)
 program FunctionalArea;
 
-{$F+}
+{.$DEFINE GRAPH}
+{$DEFINE FPC}
 
-uses Crt, Graph;
+{$IFNDEF FPC}
+{$F+}
+{$ENDIF}
+
+uses Crt {$IFDEF GRAPH}, Graph{$ENDIF};
 
 { ========== NUMERICAL METHODS ========== }
 
@@ -30,30 +35,34 @@ function Root(f1, f2 : TRealFunction; a, b, eps : real) : real;
 
 begin
 	c := a - F(a)*(b - a)/(F(b) - F(a));
-	while Abs(F(c)) >= eps do 
+	while Abs(a - b) >= eps do 
 	begin
-		if F(a)*F(c) < 0
-			then b := c
-			else a := c;
-		c := a - F(a)*(b - a)/(F(b) - F(a));	
+		Writeln(a:5:5, ' ', c:5:5, ' ', b:5:5);
+		if F(a)*F(c) > 0
+			then a := c
+			else b := c;
+		c := a - F(a)*(b - a)/(F(b) - F(a));
 	end;
 	Root := c;
 end;
 
 { Integral function
 	compute value of definite integral of function f on interval [a, b] 
-	- requires: a < b, eps > 0
+	- requires: eps > 0
 	- returns value of integral }
 function Integral(f : TRealFunction; a, b, eps : real) : real;
 
 	{ Optional }
 	const 
-		startN = 10;	
+		startN = 2;	
 	
 	var i, n : integer;
-		cur, prev, h : real;
+		cur, prev, h, muler : real;
 		
 begin
+	if a > b
+		then muler := -1
+		else muler := 1;
 	{ First iteration }
 	n := startN;
 	h := (b - a) / n;
@@ -71,7 +80,7 @@ begin
 			cur := cur + f(a + h*(i + 0.5));
 		cur := cur * h;
 	until Abs(prev - cur) / 3 < eps;
-	Integral := cur;
+	Integral := cur * muler;
 end;
 
 { ========== DEFINED FUNCTIONS ==========}
@@ -195,6 +204,7 @@ begin
 end;
 
 { ========== VISUALIZATION ========== }
+{$IFDEF GRAPH}
 
 const BGI_PATH = 'A:\tp\bgi';
 
@@ -344,11 +354,19 @@ begin
 	CloseGraph;
 end;
 
+{$ENDIF}
+
 var a, b, c : TPoint;
 	area : real;
 
 begin
+	{$IFDEF FPC}
+	ComputeTriangleArea(@F1, @F2, @F3, defaultA, defaultB, defaultEps, a, b, c, area);
+	{$ELSE}
 	ComputeTriangleArea(F1, F2, F3, defaultA, defaultB, defaultEps, a, b, c, area);
+	{$ENDIF}
+	{$IFDEF GRAPH}
 	Writeln;
 	ShowVisualization(a, b, c, area);
+	{$ENDIF}
 end.
