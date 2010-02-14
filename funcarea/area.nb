@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[     22866,        437]
-NotebookOptionsPosition[     22466,        419]
-NotebookOutlinePosition[     22804,        434]
-CellTagsIndexPosition[     22761,        431]
+NotebookDataLength[     22914,        438]
+NotebookOptionsPosition[     22515,        420]
+NotebookOutlinePosition[     22852,        435]
+CellTagsIndexPosition[     22809,        432]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -39,18 +39,18 @@ Cell[BoxData[{
   RowBox[{"2", "^", 
    RowBox[{"(", 
     RowBox[{"-", "x"}], ")"}]}]}], "\[IndentingNewLine]", 
- RowBox[{"Plot", "[", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{
-     RowBox[{"f1", "[", "x", "]"}], ",", " ", 
-     RowBox[{"f2", "[", "x", "]"}], ",", " ", 
-     RowBox[{"f3", "[", "x", "]"}]}], "}"}], ",", " ", 
-   RowBox[{"{", 
-    RowBox[{"x", ",", " ", 
-     RowBox[{"-", "2"}], ",", " ", "2"}], "}"}], ",", " ", 
-   RowBox[{"Filling", " ", "\[Rule]", " ", "Axis"}]}], 
-  "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Plot", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"f1", "[", "x", "]"}], ",", " ", 
+      RowBox[{"f2", "[", "x", "]"}]}], "}"}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"x", ",", " ", 
+      RowBox[{"-", "2"}], ",", " ", "2"}], "}"}], ",", " ", 
+    RowBox[{"Filling", " ", "\[Rule]", " ", "Axis"}]}], "]"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"Integrate", "[", 
    RowBox[{
@@ -78,7 +78,8 @@ Cell[BoxData[{
   3.474745706591907*^9}, {3.474748040587728*^9, 3.47474804873822*^9}, {
   3.474748094293384*^9, 3.474748135399124*^9}, {3.47474916322373*^9, 
   3.474749188928084*^9}, {3.4747515659217777`*^9, 3.474751778817484*^9}, {
-  3.474751887947933*^9, 3.4747519773860703`*^9}}],
+  3.474751887947933*^9, 3.4747519773860703`*^9}, {3.4749861139008293`*^9, 
+  3.474986131486236*^9}}],
 
 Cell[BoxData[
  GraphicsBox[GraphicsComplexBox[CompressedData["
@@ -418,7 +419,7 @@ Cell[BoxData["6.591104182254514`"], "Output",
 }, Open  ]]
 },
 WindowSize->{809, 750},
-WindowMargins->{{Automatic, 105}, {69, Automatic}},
+WindowMargins->{{46, Automatic}, {Automatic, 48}},
 FrontEndVersion->"7.0 for Linux x86 (64-bit) (February 25, 2009)",
 StyleDefinitions->"Default.nb"
 ]
@@ -435,9 +436,9 @@ CellTagsIndex->{}
 Notebook[{
 Cell[545, 20, 94, 1, 32, "Input"],
 Cell[CellGroupData[{
-Cell[664, 25, 2153, 55, 143, "Input"],
-Cell[2820, 82, 19490, 330, 238, "Output"],
-Cell[22313, 414, 137, 2, 31, "Output"]
+Cell[664, 25, 2202, 56, 165, "Input"],
+Cell[2869, 83, 19490, 330, 238, "Output"],
+Cell[22362, 415, 137, 2, 31, "Output"]
 }, Open  ]]
 }
 ]

@@ -5,9 +5,6 @@
  *)
 program FunctionalArea;
 
-{.$DEFINE GRAPH}
-{$DEFINE FPC}
-
 {$IFNDEF FPC}
 {$F+}
 {$ENDIF}
@@ -35,9 +32,8 @@ function Root(f1, f2 : TRealFunction; a, b, eps : real) : real;
 
 begin
 	c := a - F(a)*(b - a)/(F(b) - F(a));
-	while Abs(a - b) >= eps do 
+	while (Abs(c - a) >= eps) and (Abs(c - b) >= eps) do 
 	begin
-		Writeln(a:5:5, ' ', c:5:5, ' ', b:5:5);
 		if F(a)*F(c) > 0
 			then a := c
 			else b := c;
@@ -115,7 +111,8 @@ end;
 const
 	defaultA = -2;
 	defaultB = 2;
-	defaultEps = 1e-3;
+	defaultPointEps = 1e-5;
+	defaultIntegralEps = 1e-3;
 
 { ========== AREA COMPUTING ========== }
 
@@ -124,8 +121,11 @@ type
 		x, y : real;
 	end;
 
-procedure ComputeTriangleArea(f1, f2, f3 : TRealFunction; a, b, eps : real; 
-	var p1, p2, p3 : TPoint; var square : real);
+procedure ComputeTriangleArea(
+	f1, f2, f3 : TRealFunction; 
+	a, b, pEps, iEps : real; 
+	var p1, p2, p3 : TPoint; 
+	var square : real);
 
 	var funcs : array[1..3, 1..2] of TRealFunction;
 		absc : array[1..3] of real;
@@ -166,7 +166,7 @@ begin
 	funcs[3, 1] := f1;
 	funcs[3, 2] := f3;
 	for i := 1 to 3 do
-		absc[i] := Root(funcs[i, 1], funcs[i, 2], a, b, eps);
+		absc[i] := Root(funcs[i, 1], funcs[i, 2], a, b, pEps);
 	Sort;
 	{ Filling points }
 	p1.x := absc[1];
@@ -197,8 +197,8 @@ begin
 	TextColor(Cyan);
 	Write(' = ');
 	TextColor(Blue);
-	square := Area(funcs[1, 1], funcs[1, 2], absc[1], absc[2], eps/2) + 
-		Area(funcs[3, 1], funcs[3, 2], absc[2], absc[3], eps/2);
+	square := Area(funcs[1, 1], funcs[1, 2], absc[1], absc[2], iEps/2) + 
+		Area(funcs[3, 1], funcs[3, 2], absc[2], absc[3], iEps/2);
 	Write(square:5:5);
 	Writeln;
 end;
@@ -361,9 +361,25 @@ var a, b, c : TPoint;
 
 begin
 	{$IFDEF FPC}
-	ComputeTriangleArea(@F1, @F2, @F3, defaultA, defaultB, defaultEps, a, b, c, area);
+	ComputeTriangleArea(
+		@F1, 
+		@F2, 
+		@F3, 
+		defaultA, 
+		defaultB, 
+		defaultPointEps, 
+		defaultIntegralEps, 
+		a, b, c, area);
 	{$ELSE}
-	ComputeTriangleArea(F1, F2, F3, defaultA, defaultB, defaultEps, a, b, c, area);
+	ComputeTriangleArea(
+		F1, 
+		F2, 
+		F3, 
+		defaultA, 
+		defaultB, 
+		defaultPointEps, 
+		defaultIntegralEps, 
+		a, b, c, area);
 	{$ENDIF}
 	{$IFDEF GRAPH}
 	Writeln;
