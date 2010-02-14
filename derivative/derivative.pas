@@ -165,9 +165,9 @@ procedure InputExpression(var root : PExpression);
 			GoToXY(leftX + i - 1, y);
 			if i + shift <= Length(s)
 				then begin
-					if active and (err = i) 
+					if active and (err = i + shift) 
 						then TextColor(barErrColor);
-					Write(s[i]);			
+					Write(s[i + shift]);			
 					if active	
 						then TextColor(barTextColor);
 				end
