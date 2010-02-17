@@ -46,7 +46,7 @@ end;
 	compute value of definite integral of function f on interval [a, b] 
 	- requires: eps > 0
 	- returns value of integral }
-function Integral(f : TRealFunction; a, b, eps : real) : real;
+function Integral(f : TRealFunction; a, b, eps : real; var err : boolean) : real;
 
 	{ Optional }
 	const 
@@ -56,6 +56,7 @@ function Integral(f : TRealFunction; a, b, eps : real) : real;
 		cur, prev, h, muler : real;
 		
 begin
+	err := false;
 	if a > b
 		then muler := -1
 		else muler := 1;
@@ -69,13 +70,17 @@ begin
 	{ Next iterations }
 	repeat 
 		prev := cur;
-		n := n * 2;
-		h := h / 2;
-		cur := 0;
-		for i := 1 to n do
-			cur := cur + f(a + h*(i + 0.5));
-		cur := cur * h;
-	until Abs(prev - cur) / 3 < eps;
+		if LongInt(n) * 2 > MaxInt
+			then err := true
+			else begin 
+				n := n * 2;
+				h := h / 2;
+				cur := 0;
+				for i := 1 to n do
+					cur := cur + f(a + h*(i + 0.5));
+				cur := cur * h;
+			end;
+	until err or (Abs(prev - cur) / 3 < eps);
 	Integral := cur * muler;
 end;
 
@@ -130,6 +135,7 @@ procedure ComputeTriangleArea(
 	var funcs : array[1..3, 1..2] of TRealFunction;
 		absc : array[1..3] of real;
 		i : integer;
+		err : boolean;
 		
 	procedure Sort;
 		var i, j : integer;
@@ -153,8 +159,10 @@ procedure ComputeTriangleArea(
 	end;
 		
 	function Area(f1, f2 : TRealFunction; a, b, eps : real) : real;
+		var e1, e2 : boolean;
 	begin
-		Area := Abs(Integral(f1, a, b, eps) - Integral(f2, a, b, eps));
+		Area := Abs(Integral(f1, a, b, eps, e1) - Integral(f2, a, b, eps, e2));
+		err := err or e1 or e2;
 	end;
 		
 begin
@@ -192,13 +200,19 @@ begin
 	{ Printing area }
 	TextColor(LightRed);
 	Writeln('Area:');
+	err := false;
+	square := Area(funcs[1, 1], funcs[1, 2], absc[1], absc[2], iEps/2) + 
+		Area(funcs[3, 1], funcs[3, 2], absc[2], absc[3], iEps/2);
+	if err 
+		then begin
+			TextColor(Red);
+			Writeln('    Cannot achieve adjusted precision!');
+		end;
 	TextColor(White);
 	Write('    S');
 	TextColor(Cyan);
 	Write(' = ');
 	TextColor(Blue);
-	square := Area(funcs[1, 1], funcs[1, 2], absc[1], absc[2], iEps/2) + 
-		Area(funcs[3, 1], funcs[3, 2], absc[2], absc[3], iEps/2);
 	Write(square:5:5);
 	Writeln;
 end;
@@ -216,6 +230,7 @@ procedure ShowVisualization(p1, p2, p3 : TPoint; area : real);
 		minTop, maxTop, minLeft, maxLeft : integer;
 		minX, maxX, minY, maxY : real;
 		inter : TPoint;
+		err : boolean;
 			
 	function GetLeft(x : real) : integer;
 	begin
