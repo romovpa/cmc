@@ -52,32 +52,43 @@ function Integral(f : TRealFunction; a, b, eps : real) : real;
 	const 
 		startN = 2;	
 	
-	var i, n : integer;
-		cur, prev, h, muler : real;
+	var muler, res, prev, shift, delta, x : real;
 		
 begin
-	eps := eps / 3;
+	eps := eps * 3;
 	if a > b
-		then muler := -1
+		then begin
+			muler := -1;
+			res := a;
+			a := b;
+			b := res;
+		end	
 		else muler := 1;
 	{ First iteration }
-	n := startN;
-	h := (b - a) / n;
-	cur := 0;	
-	for i := 1 to n do
-		cur := cur + f(a + h*(i + 0.5));
-	cur := cur * h;
+	res := 0;
+	delta := (b - a) / startN;
+	shift := delta / 2;
+	x := a + shift;
+	while x < b do begin
+		res := res + f(x);
+		x := x + delta;
+	end;
+	res := res * delta;
 	{ Next iterations }
-	repeat 
-		prev := cur;
-		n := n * 2;
-		h := h / 2;
-		cur := 0;
-		for i := 1 to n do
-			cur := cur + f(a + h*(i + 0.5));
-		cur := cur * h;
-	until Abs(prev - cur) / 3  < eps;
-	Integral := cur * muler;
+	repeat
+		prev := res;
+		res := 0;
+		delta := shift;
+		shift := shift / 2;
+		x := a + shift;
+		while x < b do begin
+			res := res + f(x);
+			x := x + delta;
+		end;
+		res := res * delta;
+	until Abs(res - prev) < eps;
+	{ Result }
+	Integral := res * muler;
 end;
 
 { ========== TEST SUITE ==========}
@@ -94,7 +105,7 @@ end;
 
 function TestF3(x : real) : real;
 begin
-	TestF3 := Ln(x+1);
+	TestF3 := Ln(x+0.5);
 end;
 
 function TestZero(x : real) : real;
@@ -455,13 +466,13 @@ begin
 	InitTestSuite(rootSuite);
 	AddTest(rootSuite, @TestF1, -1, 1, 0);
 	AddTest(rootSuite, @TestF2, 0, 3, 2.5);
-	AddTest(rootSuite, @TestF3, -0.999, 1, 0);
+	AddTest(rootSuite, @TestF3, 0, 1, 0.5);
 	Writeln('Pending Root tests:');
 	RunRootTests(rootSuite, defaultPointEps);
 	InitTestSuite(intSuite);
 	AddTest(intSuite, @TestF1, -1, 1, 0);
 	AddTest(intSuite, @TestF2, -1, 1, 10);
-	AddTest(intSuite, @TestF3, -1, 1, -0.613706);
+	AddTest(intSuite, @TestF3, 0, 1, -0.04522);
 	Writeln('Pending Integral tests:');
 	RunIntegralTests(intSuite, defaultIntegralEps);
 	{ Computing area }
