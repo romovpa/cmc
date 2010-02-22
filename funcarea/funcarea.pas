@@ -31,8 +31,8 @@ function Root(f1, f2 : TRealFunction; a, b, eps : real) : real;
 	var c : real;
 
 begin
-	c := a - F(a)*(b - a)/(F(b) - F(a));
-	while (Abs(c - a) >= eps) and (Abs(c - b) >= eps) do 
+	c := (a*F(b) - b*F(a)) / (F(b) - F(a));
+	while Abs(F(c)) >= eps do 
 	begin
 		if F(a)*F(c) > 0
 			then a := c
@@ -56,6 +56,7 @@ function Integral(f : TRealFunction; a, b, eps : real) : real;
 		cur, prev, h, muler : real;
 		
 begin
+	eps := eps / 3;
 	if a > b
 		then muler := -1
 		else muler := 1;
@@ -75,8 +76,90 @@ begin
 		for i := 1 to n do
 			cur := cur + f(a + h*(i + 0.5));
 		cur := cur * h;
-	until Abs(prev - cur) / 3 < eps;
+	until Abs(prev - cur) / 3  < eps;
 	Integral := cur * muler;
+end;
+
+{ ========== TEST SUITE ==========}
+
+function TestF1(x : real) : real;
+begin
+	TestF1 := Sin(x);
+end;
+
+function TestF2(x : real) : real;
+begin
+	TestF2 := -2*x+5;
+end;
+
+function TestF3(x : real) : real;
+begin
+	TestF3 := Ln(x+1);
+end;
+
+function TestZero(x : real) : real;
+begin
+	TestZero := 0;
+end;
+
+const 
+	MaxTestsCount = 3;
+
+type 
+	TTestCase = record
+		f : TRealFunction;
+		a, b, r : real;
+	end;
+	TTestSuite = record
+		count : integer;
+		tests : array[1..MaxTestsCount] of TTestCase;
+	end;
+	
+procedure InitTestSuite(var suite : TTestSuite);
+begin
+	suite.count := 0;
+end;
+
+procedure AddTest(var suite : TTestSuite; f : TRealFunction; a, b, r : real);
+begin
+	suite.count := suite.count + 1;
+	suite.tests[suite.count].f := f;
+	suite.tests[suite.count].a := a;
+	suite.tests[suite.count].b := b;
+	suite.tests[suite.count].r := r;
+end;
+
+procedure RunRootTests(var suite : TTestSuite; eps : real);
+	var i : integer;
+		res : real;
+begin
+	for i := 1 to suite.count do 
+	begin
+		Write('  Test #', i, '...');
+		with suite.tests[i] do begin
+			res := Root(f, @TestZero, a, b, eps);
+			if Abs(r - res) < eps 
+				then Writeln('ok')
+				else Writeln('res=', res:0:7, ', correct=', r:0:7);
+		end;
+	end;
+end;
+
+procedure RunIntegralTests(var suite : TTestSuite; eps : real);
+	var i : integer;
+		res : real;
+		err : boolean;
+begin
+	for i := 1 to suite.count do 
+	begin
+		Write('  Test #', i, '...');
+		with suite.tests[i] do begin
+			res := Integral(f, a, b, eps);
+			if Abs(r - res) < eps 
+				then Writeln('ok')
+				else Writeln('res=', res:0:7, ', correct=', r:0:7);
+		end;
+	end;
 end;
 
 { ========== DEFINED FUNCTIONS ==========}
@@ -84,28 +167,19 @@ end;
 function F1(x : real) : real;
 begin
 	F1 := 1 + 4 / ( Sqr(x) + 1 );
-	{F1 := Exp(x * Ln(2)) + 1;	
-	F1 := 3 * (0.5 / (x + 1) + 1);
-	F1 := Exp(-x) + 3;
-	F1 := 1 / (x + 2);}
+	{F1 := Exp(x * Ln(2)) + 1;}
 end;
 
 function F2(x : real) : real;
 begin
 	F2 := x*x*x;
-	{F2 := x*x*x*x*x;
-	F2 := 2.5*x - 9.5;
-	F2 := 2 * x - 2;
-	F2 := 0.35 * Sqr(x) - 0.95 * x + 2.7;}
+	{F2 := x*x*x*x*x;}
 end;
 
 function F3(x : real) : real;
 begin
 	F3 := Exp( -x * Ln(2) );
-	{F3 := (1 - x) / 3;
-	F3 := 5 / x;
-	F3 := 1 / x;
-	F3 := Exp(x * Ln(3)) + 1;}
+	{F3 := (1 - x) / 3;}
 end;
 
 const
@@ -120,6 +194,19 @@ type
 	TPoint = record
 		x, y : real;
 	end;
+	
+function PrecisionLength(eps : real) : integer;
+	var res : integer;
+		x : real;
+begin
+	x := 1;
+	res := 0;
+	while x >= eps do begin
+		x := x / 10;
+		res := res + 1;
+	end;	
+	PrecisionLength := res;
+end;
 
 procedure ComputeTriangleArea(
 	f1, f2, f3 : TRealFunction; 
@@ -129,6 +216,7 @@ procedure ComputeTriangleArea(
 
 	var funcs : array[1..3, 1..2] of TRealFunction;
 		absc : array[1..3] of real;
+		pLen, iLen : integer;
 		i : integer;
 		
 	procedure Sort;
@@ -176,6 +264,8 @@ begin
 	p2.y := funcs[2, 1](p2.x);
 	p3.y := funcs[3, 1](p3.x);
 	{ Printing points }
+	pLen := PrecisionLength(pEps);
+	iLen := PrecisionLength(iEps);
 	TextColor(LightRed);
 	Writeln('Triangle points:');
 	for i := 1 to 3 do 
@@ -185,7 +275,7 @@ begin
 		TextColor(Cyan);
 		Write(' = ');
 		TextColor(Blue);
-		Write(absc[i]:5:5);
+		Write(absc[i]:0:pLen);
 		TextColor(0);
 		Writeln;
 	end;
@@ -199,7 +289,7 @@ begin
 	TextColor(Blue);
 	square := Area(funcs[1, 1], funcs[1, 2], absc[1], absc[2], iEps/2) + 
 		Area(funcs[3, 1], funcs[3, 2], absc[2], absc[3], iEps/2);
-	Write(square:5:5);
+	Write(square:0:iLen);
 	Writeln;
 end;
 
@@ -358,8 +448,23 @@ end;
 
 var a, b, c : TPoint;
 	area : real;
+	rootSuite, intSuite : TTestSuite;
 
 begin
+	{ System tests }
+	InitTestSuite(rootSuite);
+	AddTest(rootSuite, @TestF1, -1, 1, 0);
+	AddTest(rootSuite, @TestF2, 0, 3, 2.5);
+	AddTest(rootSuite, @TestF3, -0.999, 1, 0);
+	Writeln('Pending Root tests:');
+	RunRootTests(rootSuite, defaultPointEps);
+	InitTestSuite(intSuite);
+	AddTest(intSuite, @TestF1, -1, 1, 0);
+	AddTest(intSuite, @TestF2, -1, 1, 10);
+	AddTest(intSuite, @TestF3, -1, 1, -0.613706);
+	Writeln('Pending Integral tests:');
+	RunIntegralTests(intSuite, defaultIntegralEps);
+	{ Computing area }
 	{$IFDEF FPC}
 	ComputeTriangleArea(
 		@F1, 
@@ -383,6 +488,7 @@ begin
 	{$ENDIF}
 	{$IFDEF GRAPH}
 	Writeln;
+	{ Visualization }
 	ShowVisualization(a, b, c, area);
 	{$ENDIF}
 end.
