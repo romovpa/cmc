@@ -5,9 +5,7 @@
  *)
 program FunctionalArea;
 
-{$IFNDEF FPC}
 {$F+}
-{$ENDIF}
 
 uses Crt {$IFDEF GRAPH}, Graph{$ENDIF};
 
@@ -55,7 +53,6 @@ function Integral(f : TRealFunction; a, b, eps : real) : real;
 	var muler, res, prev, shift, delta, x : real;
 		
 begin
-	eps := eps * 3;
 	if a > b
 		then begin
 			muler := -1;
@@ -148,7 +145,7 @@ begin
 	begin
 		Write('  Test #', i, '...');
 		with suite.tests[i] do begin
-			res := Root(f, @TestZero, a, b, eps);
+			res := Root(f, TestZero, a, b, eps);
 			if Abs(r - res) < eps 
 				then Writeln('ok')
 				else Writeln('res=', res:0:7, ', correct=', r:0:7);
@@ -159,7 +156,6 @@ end;
 procedure RunIntegralTests(var suite : TTestSuite; eps : real);
 	var i : integer;
 		res : real;
-		err : boolean;
 begin
 	for i := 1 to suite.count do 
 	begin
@@ -464,29 +460,18 @@ var a, b, c : TPoint;
 begin
 	{ System tests }
 	InitTestSuite(rootSuite);
-	AddTest(rootSuite, @TestF1, -1, 1, 0);
-	AddTest(rootSuite, @TestF2, 0, 3, 2.5);
-	AddTest(rootSuite, @TestF3, 0, 1, 0.5);
+	AddTest(rootSuite, TestF1, -1, 1, 0);
+	AddTest(rootSuite, TestF2, 0, 3, 2.5);
+	AddTest(rootSuite, TestF3, 0, 1, 0.5);
 	Writeln('Pending Root tests:');
 	RunRootTests(rootSuite, defaultPointEps);
 	InitTestSuite(intSuite);
-	AddTest(intSuite, @TestF1, -1, 1, 0);
-	AddTest(intSuite, @TestF2, -1, 1, 10);
-	AddTest(intSuite, @TestF3, 0, 1, -0.04522);
+	AddTest(intSuite, TestF1, -1, 1, 0);
+	AddTest(intSuite, TestF2, -1, 1, 10);
+	AddTest(intSuite, TestF3, 0, 1, -0.04522);
 	Writeln('Pending Integral tests:');
 	RunIntegralTests(intSuite, defaultIntegralEps);
 	{ Computing area }
-	{$IFDEF FPC}
-	ComputeTriangleArea(
-		@F1, 
-		@F2, 
-		@F3, 
-		defaultA, 
-		defaultB, 
-		defaultPointEps, 
-		defaultIntegralEps, 
-		a, b, c, area);
-	{$ELSE}
 	ComputeTriangleArea(
 		F1, 
 		F2, 
@@ -496,7 +481,6 @@ begin
 		defaultPointEps, 
 		defaultIntegralEps, 
 		a, b, c, area);
-	{$ENDIF}
 	{$IFDEF GRAPH}
 	Writeln;
 	{ Visualization }
