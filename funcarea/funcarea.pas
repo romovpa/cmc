@@ -193,7 +193,7 @@ const
 	defaultA = -2;
 	defaultB = 2;
 	defaultPointEps = 1e-5;
-	defaultIntegralEps = 1e-3;
+	defaultIntegralEps = 1e-4;
 
 { ========== AREA COMPUTING ========== }
 
