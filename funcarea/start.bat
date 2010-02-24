@@ -1,4 +1,3 @@
-set PATH=A:\TP\BIN
-tpc funcarea.pas -UA:\TP\UNITS -DGRAPH
-funcarea.exe
+tpc funcarea.pas -DGRAPH
+funcarea.exe C:\TP\BGI
 del funcarea.exe

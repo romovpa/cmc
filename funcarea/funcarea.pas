@@ -303,7 +303,7 @@ end;
 { ========== VISUALIZATION ========== }
 {$IFDEF GRAPH}
 
-const BGI_PATH = 'A:\tp\bgi';
+var BGI_PATH : string;
 
 procedure ShowVisualization(p1, p2, p3 : TPoint; area : real);
 	
@@ -458,6 +458,7 @@ var a, b, c : TPoint;
 	rootSuite, intSuite : TTestSuite;
 
 begin
+	BGI_PATH := ParamStr(1);
 	{ System tests }
 	InitTestSuite(rootSuite);
 	AddTest(rootSuite, TestF1, -1, 1, 0);
