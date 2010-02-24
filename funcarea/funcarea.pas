@@ -5,9 +5,7 @@
  *)
 program FunctionalArea;
 
-{$IFNDEF FPC}
 {$F+}
-{$ENDIF}
 
 uses Crt {$IFDEF GRAPH}, Graph{$ENDIF};
 
@@ -33,8 +31,8 @@ function Root(f1, f2 : TRealFunction; a, b, eps : real) : real;
 	var c : real;
 
 begin
-	c := a - F(a)*(b - a)/(F(b) - F(a));
-	while (Abs(c - a) >= eps) and (Abs(c - b) >= eps) do 
+	c := (a*F(b) - b*F(a)) / (F(b) - F(a));
+	while Abs(F(c)) >= eps do 
 	begin
 		if F(a)*F(c) > 0
 			then a := c
@@ -49,55 +47,42 @@ end;
 	compute value of definite integral of function f on interval [a, b] 
 	- requires: eps > 0
 	- returns value of integral }
-<<<<<<< master:funcarea/funcarea.pas
-function Integral(f : TRealFunction; a, b, eps : real; var err : boolean) : real;
-=======
 function Integral(f : TRealFunction; a, b, eps : real; 
 	var err : boolean) : real;
->>>>>>> local:funcarea/funcarea.pas
 
 	{ Optional }
 	const 
 		startN = 2;	
 	
-	var i, n : integer;
-		cur, prev, h, muler : real;
+	var muler, res, prev, shift, delta, x : real;
 		
 begin
 	err := false;
 	if a > b
-		then muler := -1
+		then begin
+			muler := -1;
+			res := a;
+			a := b;
+			b := res;
+		end	
 		else muler := 1;
 	{ First iteration }
-	n := startN;
-	h := (b - a) / n;
-	cur := 0;	
-	for i := 1 to n do
-		cur := cur + f(a + h*(i + 0.5));
-	cur := cur * h;
+	res := 0;
+	delta := (b - a) / startN;
+	shift := delta / 2;
+	x := a + shift;
+	while x < b do begin
+		res := res + f(x);
+		x := x + delta;
+	end;
+	res := res * delta;
 	{ Next iterations }
-<<<<<<< master:funcarea/funcarea.pas
-	repeat 
-		prev := cur;
-		if LongInt(n) * 2 > MaxInt
-			then err := true
-			else begin 
-				n := n * 2;
-				h := h / 2;
-				cur := 0;
-				for i := 1 to n do
-					cur := cur + f(a + h*(i + 0.5));
-				cur := cur * h;
-			end;
-	until err or (Abs(prev - cur) / 3 < eps);
-	Integral := cur * muler;
-=======
 	repeat
 		iters := iters + 1;
 		prev := res;
 		res := 0;
 		delta := shift;
-		if Abs(delta) < minEps
+		if delta = 0
 			then begin
 				err := true;
 				Exit;
@@ -200,7 +185,6 @@ begin
 						iters, ' iterations');
 		end;
 	end;
->>>>>>> local:funcarea/funcarea.pas
 end;
 
 { ========== DEFINED FUNCTIONS ==========}
@@ -208,39 +192,26 @@ end;
 function F1(x : real) : real;
 begin
 	F1 := 1 + 4 / ( Sqr(x) + 1 );
-	{F1 := Exp(x * Ln(2)) + 1;	
-	F1 := 3 * (0.5 / (x + 1) + 1);
-	F1 := Exp(-x) + 3;
-	F1 := 1 / (x + 2);}
+	{F1 := Exp(x * Ln(2)) + 1;}
 end;
 
 function F2(x : real) : real;
 begin
 	F2 := x*x*x;
-	{F2 := x*x*x*x*x;
-	F2 := 2.5*x - 9.5;
-	F2 := 2 * x - 2;
-	F2 := 0.35 * Sqr(x) - 0.95 * x + 2.7;}
+	{F2 := x*x*x*x*x;}
 end;
 
 function F3(x : real) : real;
 begin
 	F3 := Exp( -x * Ln(2) );
-	{F3 := (1 - x) / 3;
-	F3 := 5 / x;
-	F3 := 1 / x;
-	F3 := Exp(x * Ln(3)) + 1;}
+	{F3 := (1 - x) / 3;}
 end;
 
 const
 	defaultA = -2;
 	defaultB = 2;
-<<<<<<< master:funcarea/funcarea.pas
-	defaultPointEps = 1e-5;
-=======
 	defaultPointEps = 1e-6;
->>>>>>> local:funcarea/funcarea.pas
-	defaultIntegralEps = 1e-3;
+	defaultIntegralEps = 1e-4;
 
 { ========== AREA COMPUTING ========== }
 
@@ -248,6 +219,19 @@ type
 	TPoint = record
 		x, y : real;
 	end;
+	
+function PrecisionLength(eps : real) : integer;
+	var res : integer;
+		x : real;
+begin
+	x := 1;
+	res := 0;
+	while x >= eps do begin
+		x := x / 10;
+		res := res + 1;
+	end;	
+	PrecisionLength := res;
+end;
 
 procedure ComputeTriangleArea(
 	f1, f2, f3 : TRealFunction; 
@@ -257,6 +241,7 @@ procedure ComputeTriangleArea(
 
 	var funcs : array[1..3, 1..2] of TRealFunction;
 		absc : array[1..3] of real;
+		pLen, iLen : integer;
 		i : integer;
 		err : boolean;
 		
@@ -284,12 +269,8 @@ procedure ComputeTriangleArea(
 	function Area(f1, f2 : TRealFunction; a, b, eps : real) : real;
 		var e1, e2 : boolean;
 	begin
-<<<<<<< master:funcarea/funcarea.pas
 		Area := Abs(Integral(f1, a, b, eps, e1) - Integral(f2, a, b, eps, e2));
 		err := err or e1 or e2;
-=======
-		Area := Abs(Integral(f1, a, b, eps, err) - Integral(f2, a, b, eps, err));
->>>>>>> local:funcarea/funcarea.pas
 	end;
 		
 begin
@@ -311,6 +292,8 @@ begin
 	p2.y := funcs[2, 1](p2.x);
 	p3.y := funcs[3, 1](p3.x);
 	{ Printing points }
+	pLen := PrecisionLength(pEps);
+	iLen := PrecisionLength(iEps);
 	TextColor(LightRed);
 	Writeln('Triangle points:');
 	for i := 1 to 3 do 
@@ -320,7 +303,7 @@ begin
 		TextColor(Cyan);
 		Write(' = ');
 		TextColor(Blue);
-		Write(absc[i]:5:5);
+		Write(absc[i]:0:pLen);
 		TextColor(0);
 		Writeln;
 	end;
@@ -340,14 +323,16 @@ begin
 	TextColor(Cyan);
 	Write(' = ');
 	TextColor(Blue);
-	Write(square:5:5);
+	square := Area(funcs[1, 1], funcs[1, 2], absc[1], absc[2], iEps/2) + 
+		Area(funcs[3, 1], funcs[3, 2], absc[2], absc[3], iEps/2);
+	Write(square:0:iLen);
 	Writeln;
 end;
 
 { ========== VISUALIZATION ========== }
 {$IFDEF GRAPH}
 
-const BGI_PATH = 'A:\tp\bgi';
+var BGI_PATH : string;
 
 procedure ShowVisualization(p1, p2, p3 : TPoint; area : real);
 	
@@ -500,24 +485,13 @@ end;
 
 var a, b, c : TPoint;
 	area : real;
+	rootSuite, intSuite : TTestSuite;
 
 begin
-<<<<<<< master:funcarea/funcarea.pas
-	{$IFDEF FPC}
-	ComputeTriangleArea(
-		@F1, 
-		@F2, 
-		@F3, 
-		defaultA, 
-		defaultB, 
-		defaultPointEps, 
-		defaultIntegralEps, 
-		a, b, c, area);
-	{$ELSE}
-=======
+	BGI_PATH := ParamStr(1);
 	{ System tests }
 	InitTestSuite(rootSuite);
-	AddTest(rootSuite, TestF1, -0.5, 1, 0);
+	AddTest(rootSuite, TestF1, -1, 1, 0);
 	AddTest(rootSuite, TestF2, 0, 3, 2.5);
 	AddTest(rootSuite, TestF3, 0, 1, 0.5);
 	Writeln('Pending Root tests:');
@@ -529,7 +503,6 @@ begin
 	Writeln('Pending Integral tests:');
 	RunIntegralTests(intSuite, defaultIntegralEps);
 	{ Computing area }
->>>>>>> local:funcarea/funcarea.pas
 	ComputeTriangleArea(
 		F1, 
 		F2, 
@@ -539,9 +512,9 @@ begin
 		defaultPointEps, 
 		defaultIntegralEps, 
 		a, b, c, area);
-	{$ENDIF}
 	{$IFDEF GRAPH}
 	Writeln;
+	{ Visualization }
 	ShowVisualization(a, b, c, area);
 	{$ENDIF}
 end.

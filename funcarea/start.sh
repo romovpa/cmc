@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fpc -D FPC funcarea.pas > compile 2>> compile
+fpc -Mtp funcarea.pas > compile 2>> compile
 if [ $? == 0 ]
 then
 	./funcarea
