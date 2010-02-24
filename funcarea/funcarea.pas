@@ -16,6 +16,8 @@ uses Crt {$IFDEF GRAPH}, Graph{$ENDIF};
 { Real function type definition }
 type 
 	TRealFunction = function(x : real) : real;
+	
+var iters : longint;
 
 { Root function
 	find cross point of functions f1 and f2 on interval [a, b]
@@ -38,6 +40,7 @@ begin
 			then a := c
 			else b := c;
 		c := a - F(a)*(b - a)/(F(b) - F(a));
+		iters := iters + 1;
 	end;
 	Root := c;
 end;
@@ -46,7 +49,12 @@ end;
 	compute value of definite integral of function f on interval [a, b] 
 	- requires: eps > 0
 	- returns value of integral }
+<<<<<<< master:funcarea/funcarea.pas
 function Integral(f : TRealFunction; a, b, eps : real; var err : boolean) : real;
+=======
+function Integral(f : TRealFunction; a, b, eps : real; 
+	var err : boolean) : real;
+>>>>>>> local:funcarea/funcarea.pas
 
 	{ Optional }
 	const 
@@ -68,6 +76,7 @@ begin
 		cur := cur + f(a + h*(i + 0.5));
 	cur := cur * h;
 	{ Next iterations }
+<<<<<<< master:funcarea/funcarea.pas
 	repeat 
 		prev := cur;
 		if LongInt(n) * 2 > MaxInt
@@ -82,6 +91,116 @@ begin
 			end;
 	until err or (Abs(prev - cur) / 3 < eps);
 	Integral := cur * muler;
+=======
+	repeat
+		iters := iters + 1;
+		prev := res;
+		res := 0;
+		delta := shift;
+		if Abs(delta) < minEps
+			then begin
+				err := true;
+				Exit;
+			end;
+		shift := shift / 2;
+		x := a + shift;
+		while x < b do begin
+			res := res + f(x);
+			x := x + delta;
+		end;
+		res := res * delta;
+	until Abs(res - prev) < eps;
+	{ Result }
+	Integral := res * muler;
+end;
+
+{ ========== TEST SUITE ==========}
+
+function TestF1(x : real) : real;
+begin
+	TestF1 := Sin(x);
+end;
+
+function TestF2(x : real) : real;
+begin
+	TestF2 := -2*x+5;
+end;
+
+function TestF3(x : real) : real;
+begin
+	TestF3 := Ln(x+0.5);
+end;
+
+function TestZero(x : real) : real;
+begin
+	TestZero := 0;
+end;
+
+const 
+	MaxTestsCount = 3;
+
+type 
+	TTestCase = record
+		f : TRealFunction;
+		a, b, r : real;
+	end;
+	TTestSuite = record
+		count : integer;
+		tests : array[1..MaxTestsCount] of TTestCase;
+	end;
+	
+procedure InitTestSuite(var suite : TTestSuite);
+begin
+	suite.count := 0;
+end;
+
+procedure AddTest(var suite : TTestSuite; f : TRealFunction; a, b, r : real);
+begin
+	suite.count := suite.count + 1;
+	suite.tests[suite.count].f := f;
+	suite.tests[suite.count].a := a;
+	suite.tests[suite.count].b := b;
+	suite.tests[suite.count].r := r;
+end;
+
+procedure RunRootTests(var suite : TTestSuite; eps : real);
+	var i : integer;
+		res : real;
+begin
+	for i := 1 to suite.count do 
+	begin
+		Write('  Test #', i, '...');
+		iters := 0;
+		with suite.tests[i] do begin
+			res := Root(f, TestZero, a, b, eps);
+			if Abs(r - res) < eps 
+				then Writeln('ok, ', iters, ' iterations')
+				else Writeln('res=', res:0:7, ', correct=', r:0:7, ' ',
+					iters, ' iterations');
+		end;
+	end;
+end;
+
+procedure RunIntegralTests(var suite : TTestSuite; eps : real);
+	var i : integer;
+		res : real;
+		err : boolean;
+begin
+	for i := 1 to suite.count do 
+	begin
+		Write('  Test #', i, '...');
+		iters := 0;
+		with suite.tests[i] do begin
+			res := Integral(f, a, b, eps, err);
+			if err 
+				then Writeln('impossible precision')
+				else if Abs(r - res) < eps 
+					then Writeln('ok, ', iters, ' iterations')
+					else Writeln('res=', res:0:7, ', correct=', r:0:7, ' ',
+						iters, ' iterations');
+		end;
+	end;
+>>>>>>> local:funcarea/funcarea.pas
 end;
 
 { ========== DEFINED FUNCTIONS ==========}
@@ -116,7 +235,11 @@ end;
 const
 	defaultA = -2;
 	defaultB = 2;
+<<<<<<< master:funcarea/funcarea.pas
 	defaultPointEps = 1e-5;
+=======
+	defaultPointEps = 1e-6;
+>>>>>>> local:funcarea/funcarea.pas
 	defaultIntegralEps = 1e-3;
 
 { ========== AREA COMPUTING ========== }
@@ -161,8 +284,12 @@ procedure ComputeTriangleArea(
 	function Area(f1, f2 : TRealFunction; a, b, eps : real) : real;
 		var e1, e2 : boolean;
 	begin
+<<<<<<< master:funcarea/funcarea.pas
 		Area := Abs(Integral(f1, a, b, eps, e1) - Integral(f2, a, b, eps, e2));
 		err := err or e1 or e2;
+=======
+		Area := Abs(Integral(f1, a, b, eps, err) - Integral(f2, a, b, eps, err));
+>>>>>>> local:funcarea/funcarea.pas
 	end;
 		
 begin
@@ -375,6 +502,7 @@ var a, b, c : TPoint;
 	area : real;
 
 begin
+<<<<<<< master:funcarea/funcarea.pas
 	{$IFDEF FPC}
 	ComputeTriangleArea(
 		@F1, 
@@ -386,6 +514,22 @@ begin
 		defaultIntegralEps, 
 		a, b, c, area);
 	{$ELSE}
+=======
+	{ System tests }
+	InitTestSuite(rootSuite);
+	AddTest(rootSuite, TestF1, -0.5, 1, 0);
+	AddTest(rootSuite, TestF2, 0, 3, 2.5);
+	AddTest(rootSuite, TestF3, 0, 1, 0.5);
+	Writeln('Pending Root tests:');
+	RunRootTests(rootSuite, defaultPointEps);
+	InitTestSuite(intSuite);
+	AddTest(intSuite, TestF1, -1, 1, 0);
+	AddTest(intSuite, TestF2, -1, 1, 10);
+	AddTest(intSuite, TestF3, 0, 1, -0.04522);
+	Writeln('Pending Integral tests:');
+	RunIntegralTests(intSuite, defaultIntegralEps);
+	{ Computing area }
+>>>>>>> local:funcarea/funcarea.pas
 	ComputeTriangleArea(
 		F1, 
 		F2, 
