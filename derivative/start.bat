@@ -1,2 +1,3 @@
-tp\bin\tpc -DMEM deriv.pas
+tpc -DMEM deriv.pas
 deriv
+del deriv.exe
