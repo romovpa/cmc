@@ -14,6 +14,7 @@ nil 		equ 0
 word_end	equ ','
 seq_end		equ '.'
 empty_char	equ 0
+print_shift equ 2
 
 ; types definition
 node struc 
@@ -109,15 +110,20 @@ code segment
 	; procedure print
 	;    args: BX - node pointer
 	print proc
-					; printing string
+					REPT print_shift
+					outch ' '
+					ENDM
+					; printing string					
 					push CX
 					push DI
 					mov CX, str_size					
 					lea DI, ES:[BX].str
-		_prt_loop:	outch ES:[DI]
+		_prt_loop:	cmp byte ptr ES:[DI], empty_char
+					je _prt_ends
+					outch ES:[DI]
 					inc DI
 					loop _prt_loop
-					pop DI
+		_prt_ends:	pop DI
 					pop CX
 					
 					; printing extra information
