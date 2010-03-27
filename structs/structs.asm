@@ -33,7 +33,7 @@ data segment
 	msg_prompt db "Enter sequence: $"
 	msg_heap_overflow db "Heap overflow!$"
 	msg_matched db "Matched $"
-	msg_times db " times$"
+	msg_times db " times:$"
 	root dw nil
 	free dw nil	
 data ends
@@ -220,8 +220,9 @@ code segment
 	
 	;;;;;;;;;;;;;;;;;;;;
 	; procedure fill
-	;    args: SI - subtree node pointer
-	;          DI - previous node (static)
+	;    args:   SI - subtree node pointer
+	;            DI - previous node (static)
+	;    result: CH - maximal match number
 	fill proc
 					cmp ES:[SI].left, nil
 					je _fill_mid					
@@ -241,11 +242,14 @@ code segment
 					mov ES:[SI].match, 1
 					jmp _fill_endp
 		_fill_chn:	; next element in chain
-					push CX
-					mov CL, ES:[DI].match
-					inc CL
-					mov ES:[SI].match, CL
-					pop CX
+					push DX
+					mov DL, ES:[DI].match
+					inc DL					
+					cmp DL, CH      ; CH = max(CH, DL)
+					jna _fill_chn1
+					mov CH, DL
+		_fill_chn1:	mov ES:[SI].match, DL
+					pop DX
 					jmp _fill_endp
 		_fill_fst:	; it is first
 					mov ES:[SI].match, 1					
@@ -335,10 +339,10 @@ code segment
 				cmp AL, seq_end
 				jne _inp_next
 				
-	; === resulting ===
+	; === getting result ===
 	
+				mov CH, 0
 				mov SI, root
-				
 				mov DI, nil
 				call fill
 								
@@ -353,13 +357,12 @@ code segment
 				newline		
 				; printing entries
 				call view
-				newline
 				; loop end
 				inc AL
-				cmp CL, 0
-				jne _outp_loop
+				cmp AL, CH
+				jb _outp_loop
 				
-				
+	; === finish ===			
 				finish
 code ends
 
