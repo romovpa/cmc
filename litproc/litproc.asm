@@ -6,6 +6,8 @@
 
 include io.asm
 
+str_len equ 256
+
 stack segment stack
 	db 128 dup (?)
 stack ends
@@ -17,7 +19,7 @@ data segment
 	msg_second	db "Second$"
 	msg_trans	db " transformation$"
 	msg_empty	db "Empty!$"
-	str db 256 dup ('$')
+	str 		db str_len dup ('$')
 data ends
 
 code segment
@@ -113,13 +115,14 @@ code segment
 			outstr
 			
 			; Reading string 
+			mov CX, str_len
 			mov DI, 0
 	read:	inch AL
 			cmp AL, '.'
 			je eread
 			mov str[DI], AL
 			inc DI
-			jmp read
+			loop read			
 	eread:	mov str[DI], '$'
 			cmp DI, 0
 			je empty
